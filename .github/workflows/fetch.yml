@@ -1,0 +1,28 @@
+name: fetch-song2
+on: workflow_dispatch
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch HQ audio candidates
+        shell: bash
+        run: |
+          set -x
+          U="ddfd20fc-b29f-4436-923b-35ca6f61db8f"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"
+          mkdir -p out
+          curl -sL -A "$UA" "https://cdn1.suno.ai/$U.mp3" -o out/cdn1.mp3
+          curl -sL -A "$UA" "https://cdn1.suno.ai/$U.mp4" -o out/cdn1.mp4
+          curl -sL -A "$UA" "https://cdn1.suno.ai/$U.wav" -o out/cdn1.wav
+          curl -sL -A "$UA" "https://cdn2.suno.ai/$U.mp3" -o out/cdn2.mp3
+          curl -sL -A "$UA" -e "https://suno.com/" "https://suno.com/api/download/clip/$U" -o out/download.bin
+          curl -sL -A "$UA" -D out/dl_headers.txt -o /dev/null "https://suno.com/api/download/clip/$U"
+          cat out/dl_headers.txt
+          ls -la out
+          file out/* || true
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-hq
+          path: out/
+          if-no-files-found: warn
